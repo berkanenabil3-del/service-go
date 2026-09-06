@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, LogOut, RefreshCcw, Calendar, User, Phone, MapPin, Check, Trash2, CheckCircle2, Users, Wrench, CalendarCheck, TrendingUp, Search, Filter, Settings, FileText, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './index.css';
 
 function Admin() {
@@ -199,7 +199,7 @@ function Admin() {
       tableRows.push(resData);
     });
 
-    doc.autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 20,
