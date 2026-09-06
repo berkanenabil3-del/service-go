@@ -148,10 +148,10 @@ function Booking() {
           <div className="mb-6 flex flex-col gap-3">
             <div className="card banner-emergency flex flex-col gap-3" style={{ padding: '16px' }}>
               <div className="flex items-center gap-3">
-                <div className="bg-white p-2 rounded-full text-red-500"><PhoneCall size={24} /></div>
+                <div className="bg-white p-2 rounded-full" style={{ color: '#ef4444' }}><PhoneCall size={24} /></div>
                 <div>
-                  <h3 className="font-bold text-red-600" style={{ fontSize: '1.1rem' }}>{t('emergency')}</h3>
-                  <p className="text-sm text-red-500">{t('click_call')}</p>
+                  <h3 className="font-bold" style={{ fontSize: '1.1rem', color: '#dc2626' }}>{t('emergency')}</h3>
+                  <p className="text-sm" style={{ color: '#ef4444' }}>{t('click_call')}</p>
                 </div>
               </div>
               <div className="flex gap-2 w-full">
