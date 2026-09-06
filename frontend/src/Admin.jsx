@@ -28,19 +28,27 @@ function Admin() {
 
   const ADMIN_PASSWORD = "admin";
 
+  const getAdminHeaders = () => {
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+    };
+  };
+
   const fetchAllData = async () => {
     setLoading(true);
+    const headers = getAdminHeaders();
     try {
-      const resRes = await fetch('/api/admin/reservations');
+      const resRes = await fetch('/api/admin/reservations', { headers });
       if (resRes.ok) setReservations(await resRes.json());
       
       const resServ = await fetch('/api/services');
       if (resServ.ok) setServices(await resServ.json());
       
-      const resTech = await fetch('/api/admin/technicians');
+      const resTech = await fetch('/api/admin/technicians', { headers });
       if (resTech.ok) setTechnicians(await resTech.json());
       
-      const resStats = await fetch('/api/admin/stats');
+      const resStats = await fetch('/api/admin/stats', { headers });
       if (resStats.ok) setStats(await resStats.json());
     } catch (e) {
       toast.error("Erreur réseau");
@@ -49,14 +57,26 @@ function Admin() {
     }
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      fetchAllData();
-      toast.success("Connexion réussie");
-    } else {
-      toast.error("Mot de passe incorrect");
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('adminToken', data.token);
+        setIsAuthenticated(true);
+        toast.success("Connexion réussie");
+        // We trigger a fetch immediately after setting token
+        setTimeout(() => fetchAllData(), 50);
+      } else {
+        toast.error("Mot de passe incorrect");
+      }
+    } catch(err) {
+      toast.error("Erreur de serveur");
     }
   };
 
@@ -66,7 +86,7 @@ function Admin() {
     if (isAuthenticated) {
       interval = setInterval(async () => {
         try {
-          const res = await fetch('/api/admin/reservations');
+          const res = await fetch('/api/admin/reservations', { headers: getAdminHeaders() });
           if (res.ok) {
             const newData = await res.json();
             setReservations(prev => {
@@ -103,7 +123,7 @@ function Admin() {
     try {
       const response = await fetch(`/api/admin/reservations/${id}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders(),
         body: JSON.stringify({ status, price })
       });
       const data = await response.json();
@@ -123,7 +143,7 @@ function Admin() {
   const deleteReservation = async (id) => {
     if(window.confirm("Êtes-vous sûr de vouloir supprimer cette réservation ?")) {
       try {
-        await fetch(`/api/admin/reservations/${id}`, { method: 'DELETE' });
+        await fetch(`/api/admin/reservations/${id}`, { method: 'DELETE', headers: getAdminHeaders() });
         fetchAllData();
         toast.success("Réservation supprimée");
       } catch (error) { toast.error("Erreur"); }
@@ -136,22 +156,22 @@ function Admin() {
     try {
       await fetch('/api/admin/services', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders(),
         body: JSON.stringify(newService)
       });
       setNewService({ name: '', description: '', icon_type: 'droplet' });
       fetchAllData();
       toast.success("Service ajouté");
-    } catch (e) { toast.error("Erreur"); }
+    } catch (error) { toast.error("Erreur"); }
   };
   
   const deleteService = async (id) => {
     if(window.confirm("Supprimer ce service ?")) {
       try {
-        await fetch(`/api/admin/services/${id}`, { method: 'DELETE' });
+        await fetch(`/api/admin/services/${id}`, { method: 'DELETE', headers: getAdminHeaders() });
         fetchAllData();
         toast.success("Service supprimé");
-      } catch (e) { toast.error("Erreur"); }
+      } catch (error) { toast.error("Erreur"); }
     }
   };
 
@@ -161,22 +181,22 @@ function Admin() {
     try {
       await fetch('/api/admin/technicians', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAdminHeaders(),
         body: JSON.stringify(newTech)
       });
       setNewTech({ name: '', phone: '', specialty: '' });
       fetchAllData();
       toast.success("Technicien ajouté");
-    } catch (e) { toast.error("Erreur"); }
+    } catch (error) { toast.error("Erreur"); }
   };
   
   const deleteTech = async (id) => {
     if(window.confirm("Supprimer ce technicien ?")) {
       try {
-        await fetch(`/api/admin/technicians/${id}`, { method: 'DELETE' });
+        await fetch(`/api/admin/technicians/${id}`, { method: 'DELETE', headers: getAdminHeaders() });
         fetchAllData();
         toast.success("Technicien supprimé");
-      } catch (e) { toast.error("Erreur"); }
+      } catch (error) { toast.error("Erreur"); }
     }
   };
 
@@ -338,7 +358,17 @@ function Admin() {
                 <div className="grid md:grid-cols-2 gap-2">
                   <div>
                     <p><User size={16} className="inline mr-2 text-muted" /> <strong>{res.name}</strong></p>
-                    <p><Phone size={16} className="inline mr-2 text-muted" /> <a href={`tel:${res.phone}`} className="text-primary">{res.phone}</a></p>
+                    <p className="flex items-center gap-2">
+                      <Phone size={16} className="text-muted" /> 
+                      <a href={`tel:${res.phone}`} className="text-primary">{res.phone}</a>
+                      {res.phone.match(/^(05|06|07)/) && (
+                        <a href={`https://wa.me/213${res.phone.substring(1)}?text=Bonjour%20${encodeURIComponent(res.name)},%20c'est%20le%20technicien%20SERVICE-GO.%20J'ai%20bien%20reçu%20votre%20demande%20pour%20${encodeURIComponent(res.service)}.`} 
+                           target="_blank" rel="noreferrer" 
+                           className="bg-green-500 text-white text-xs px-2 py-1 rounded flex items-center font-bold ml-2 hover:bg-green-600 transition-colors">
+                          WhatsApp
+                        </a>
+                      )}
+                    </p>
                     <p className="flex items-start">
                       <MapPin size={16} className="mr-2 text-muted mt-1 flex-shrink-0" />
                       {res.address.startsWith('http') ? (

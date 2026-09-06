@@ -123,6 +123,19 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// Middleware Admin
+const authenticateAdmin = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err || user.role !== 'admin') return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
+
 // ========================
 // ROUTES D'AUTHENTIFICATION
 // ========================
@@ -283,15 +296,25 @@ app.post('/api/reservations', (req, res) => {
 // ROUTES ADMIN
 // ========================
 
-app.get('/api/admin/reservations', (req, res) => {
-  // En production, il faudrait une vérification admin ici.
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  // Mot de passe admin codé en dur (simplifié pour cet exemple)
+  if (password === 'admin') {
+    const token = jwt.sign({ role: 'admin' }, SECRET_KEY, { expiresIn: '1d' });
+    res.json({ token });
+  } else {
+    res.status(401).json({ error: "Mot de passe incorrect" });
+  }
+});
+
+app.get('/api/admin/reservations', authenticateAdmin, (req, res) => {
   db.all(`SELECT * FROM reservations ORDER BY date_reservation DESC`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: "Erreur" });
     res.json(rows);
   });
 });
 
-app.put('/api/admin/reservations/:id/status', (req, res) => {
+app.put('/api/admin/reservations/:id/status', authenticateAdmin, (req, res) => {
   const { id } = req.params;
   const { status, price } = req.body;
   
@@ -323,7 +346,7 @@ app.put('/api/admin/reservations/:id/status', (req, res) => {
   });
 });
 
-app.get('/api/admin/stats', (req, res) => {
+app.get('/api/admin/stats', authenticateAdmin, (req, res) => {
   const stats = {
     clients: 0,
     technicians: 0, 
@@ -353,7 +376,7 @@ app.get('/api/admin/stats', (req, res) => {
   });
 });
 
-app.delete('/api/admin/reservations/:id', (req, res) => {
+app.delete('/api/admin/reservations/:id', authenticateAdmin, (req, res) => {
   db.run(`DELETE FROM reservations WHERE id = ?`, [req.params.id], function(err) {
     if (err) return res.status(500).json({ error: "Erreur" });
     res.json({ message: "Supprimée" });
@@ -361,7 +384,7 @@ app.delete('/api/admin/reservations/:id', (req, res) => {
 });
 
 // Admin : Services
-app.post('/api/admin/services', (req, res) => {
+app.post('/api/admin/services', authenticateAdmin, (req, res) => {
   const { name, description, icon_type } = req.body;
   db.run(`INSERT INTO services (name, description, icon_type) VALUES (?, ?, ?)`, [name, description, icon_type || 'tool'], function(err) {
     if (err) return res.status(500).json({ error: "Erreur" });
@@ -369,7 +392,7 @@ app.post('/api/admin/services', (req, res) => {
   });
 });
 
-app.delete('/api/admin/services/:id', (req, res) => {
+app.delete('/api/admin/services/:id', authenticateAdmin, (req, res) => {
   db.run(`DELETE FROM services WHERE id = ?`, [req.params.id], function(err) {
     if (err) return res.status(500).json({ error: "Erreur" });
     res.json({ message: "Supprimé" });
@@ -377,14 +400,14 @@ app.delete('/api/admin/services/:id', (req, res) => {
 });
 
 // Admin : Technicians
-app.get('/api/admin/technicians', (req, res) => {
+app.get('/api/admin/technicians', authenticateAdmin, (req, res) => {
   db.all(`SELECT * FROM technicians`, [], (err, rows) => {
     if (err) return res.status(500).json({ error: "Erreur" });
     res.json(rows);
   });
 });
 
-app.post('/api/admin/technicians', (req, res) => {
+app.post('/api/admin/technicians', authenticateAdmin, (req, res) => {
   const { name, phone, specialty } = req.body;
   db.run(`INSERT INTO technicians (name, phone, specialty) VALUES (?, ?, ?)`, [name, phone, specialty], function(err) {
     if (err) return res.status(500).json({ error: "Erreur" });
@@ -392,7 +415,7 @@ app.post('/api/admin/technicians', (req, res) => {
   });
 });
 
-app.delete('/api/admin/technicians/:id', (req, res) => {
+app.delete('/api/admin/technicians/:id', authenticateAdmin, (req, res) => {
   db.run(`DELETE FROM technicians WHERE id = ?`, [req.params.id], function(err) {
     if (err) return res.status(500).json({ error: "Erreur" });
     res.json({ message: "Supprimé" });

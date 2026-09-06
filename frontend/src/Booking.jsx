@@ -112,6 +112,14 @@ function Booking() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validation du numéro de téléphone algérien
+    const phoneClean = formData.phone.replace(/\s+/g, '');
+    const phoneRegex = /^(05|06|07)\d{8}$/;
+    if (!phoneRegex.test(phoneClean)) {
+      toast.error("Veuillez entrer un numéro de téléphone valide (ex: 05xx, 06xx, 07xx)");
+      return;
+    }
+    
     // Simulate Card Payment
     if (paymentMethod === 'card') {
       const isCardValid = window.confirm("Simulation Paiement CIB/Edahabia : Confirmer le prélèvement ?");
