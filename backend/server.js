@@ -51,6 +51,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
         phone TEXT NOT NULL,
         address TEXT NOT NULL,
         details TEXT,
+        photo_data TEXT,
         status TEXT DEFAULT 'En attente', -- En attente, Acceptée, En route, En cours, Terminée
         price REAL DEFAULT 0,
         date_reservation DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -256,7 +257,7 @@ app.get('/api/reviews/public', (req, res) => {
 
 // Créer une réservation (peut être liée à un user si le token est fourni, sinon anonyme)
 app.post('/api/reservations', (req, res) => {
-  const { service, name, phone, address, details } = req.body;
+  const { service, name, phone, address, details, photo_data } = req.body;
   let user_id = null;
   
   // Tentative de récupérer l'utilisateur si token présent (sans forcer l'erreur si absent)
@@ -271,8 +272,8 @@ app.post('/api/reservations', (req, res) => {
     }
   }
 
-  const query = `INSERT INTO reservations (user_id, service, name, phone, address, details, status) VALUES (?, ?, ?, ?, ?, ?, 'En attente')`;
-  db.run(query, [user_id, service, name, phone, address, details], function(err) {
+  const query = `INSERT INTO reservations (user_id, service, name, phone, address, details, photo_data, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'En attente')`;
+  db.run(query, [user_id, service, name, phone, address, details, photo_data || null], function(err) {
     if (err) return res.status(500).json({ error: "Erreur" });
     res.status(201).json({ message: "Réservation enregistrée", id: this.lastID });
   });

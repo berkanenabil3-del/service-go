@@ -339,13 +339,28 @@ function Admin() {
                   <div>
                     <p><User size={16} className="inline mr-2 text-muted" /> <strong>{res.name}</strong></p>
                     <p><Phone size={16} className="inline mr-2 text-muted" /> <a href={`tel:${res.phone}`} className="text-primary">{res.phone}</a></p>
-                    <p><MapPin size={16} className="inline mr-2 text-muted" /> <span>{res.address}</span></p>
+                    <p className="flex items-start">
+                      <MapPin size={16} className="mr-2 text-muted mt-1 flex-shrink-0" />
+                      {res.address.startsWith('http') ? (
+                        <a href={res.address} target="_blank" rel="noreferrer" className="text-primary font-bold break-all">📍 Ouvrir dans Google Maps</a>
+                      ) : (
+                        <span>{res.address}</span>
+                      )}
+                    </p>
                   </div>
-                  {res.details && (
-                    <div className="p-3 bg-gray-50 rounded text-sm mt-2 md:mt-0">
-                      <strong>Détails :</strong> {res.details}
-                    </div>
-                  )}
+                  <div className="flex flex-col gap-2">
+                    {res.details && (
+                      <div className="p-3 bg-gray-50 rounded text-sm">
+                        <strong>Détails :</strong> {res.details}
+                      </div>
+                    )}
+                    {res.photo_data && (
+                      <div className="mt-2">
+                        <span className="text-sm font-bold text-gray-700 block mb-1">📸 Photo jointe :</span>
+                        <img src={res.photo_data} alt="Problème" style={{ maxHeight: '150px', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">

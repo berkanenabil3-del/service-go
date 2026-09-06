@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PhoneCall, Droplet, Flame, Snowflake, UserCircle, ArrowLeft, PenTool, Star, CreditCard, Wallet } from 'lucide-react';
+import { PhoneCall, Droplet, Flame, Snowflake, UserCircle, ArrowLeft, PenTool, Star, CreditCard, Wallet, MapPin, Navigation, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from './App';
 import { useTranslation } from 'react-i18next';
@@ -12,10 +12,68 @@ function Booking() {
   const [selectedService, setSelectedService] = useState(null);
   const [services, setServices] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [formData, setFormData] = useState({ name: '', phone: '', address: '', details: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', address: '', details: '', photo_data: '' });
   const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' or 'card'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+
+  const getLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('La géolocalisation n\'est pas supportée par votre navigateur');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        setFormData(prev => ({ ...prev, address: mapsLink }));
+        toast.success('Position trouvée !');
+        setIsLocating(false);
+      },
+      (error) => {
+        toast.error('Impossible de récupérer votre position');
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Compress image using Canvas to save DB space
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Export to Base64 (JPEG, quality 0.7)
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        setFormData(prev => ({ ...prev, photo_data: compressedBase64 }));
+        toast.success('Photo ajoutée !');
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
 
   useEffect(() => {
     // Fetch dynamic services
@@ -234,13 +292,31 @@ function Booking() {
             </div>
             
             <div className="form-group">
-              <label className="form-label">{t('address')}</label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="form-label mb-0">{t('address')}</label>
+                <button type="button" onClick={getLocation} disabled={isLocating} className="text-primary text-sm flex items-center gap-1 font-bold bg-blue-50 px-2 py-1 rounded">
+                  {isLocating ? <span className="animate-spin">⏳</span> : <Navigation size={14} />}
+                  📍 Utiliser ma position
+                </button>
+              </div>
               <input type="text" name="address" required className="form-input" value={formData.address} onChange={handleInputChange} />
             </div>
             
-            <div className="form-group mb-6">
+            <div className="form-group mb-4">
               <label className="form-label">{t('details')}</label>
               <textarea name="details" className="form-input" rows="3" placeholder={t('details_placeholder')} value={formData.details} onChange={handleInputChange}></textarea>
+            </div>
+
+            <div className="form-group mb-6">
+              <label className="form-label block mb-2">📸 Ajouter une photo (Optionnel)</label>
+              <div className="flex items-center gap-3">
+                <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded border border-gray-300 flex items-center gap-2">
+                  <Camera size={20} />
+                  Choisir une image
+                  <input type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
+                </label>
+                {formData.photo_data && <span className="text-green-600 font-bold text-sm flex items-center gap-1">✓ Photo ajoutée</span>}
+              </div>
             </div>
 
             {/* Paiement */}
