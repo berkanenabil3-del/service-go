@@ -129,8 +129,9 @@ function Booking() {
         >
           {i18n.language === 'fr' ? 'عربي' : 'FR'}
         </button>
-        <Link to="/client" style={{ position: 'absolute', right: '10px', top: '10px', color: '#0ea5e9' }}>
-          <UserCircle size={32} />
+        <Link to="/client" style={{ position: 'absolute', right: '15px', top: '10px', display: 'flex', alignItems: 'center', gap: '5px', backgroundColor: '#0ea5e9', color: 'white', padding: '6px 12px', borderRadius: '20px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem', boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.3)' }}>
+          <UserCircle size={18} />
+          {t('client_area', 'Espace Client')}
         </Link>
         <div className="flex items-center gap-3 mt-8">
           <Droplet size={28} className="text-primary" />

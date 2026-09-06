@@ -39,7 +39,7 @@ export const ThemeToggle = () => {
   return (
     <button 
       onClick={toggleTheme}
-      style={{ position: 'fixed', top: '10px', right: '50px', zIndex: 100, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '50%', padding: '8px', backdropFilter: 'blur(10px)', color: 'var(--text-dark)' }}
+      style={{ position: 'absolute', top: '10px', left: '75px', zIndex: 100, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '50%', padding: '8px', backdropFilter: 'blur(10px)', color: 'var(--text-dark)' }}
     >
       {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
     </button>
