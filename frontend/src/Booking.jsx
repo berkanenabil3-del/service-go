@@ -145,7 +145,7 @@ function Booking() {
         <div className="animate-fade-in-up delay-100">
           
           <div className="mb-6 flex flex-col gap-3">
-            <a href="tel:0555000000" className="card flex items-center justify-between banner-emergency" style={{ padding: '16px', textDecoration: 'none' }}>
+            <div className="card banner-emergency flex flex-col gap-3" style={{ padding: '16px' }}>
               <div className="flex items-center gap-3">
                 <div className="bg-white p-2 rounded-full text-red-500"><PhoneCall size={24} /></div>
                 <div>
@@ -153,8 +153,17 @@ function Booking() {
                   <p className="text-sm text-red-500">{t('click_call')}</p>
                 </div>
               </div>
-              <div className="animate-pulse text-red-500">→</div>
-            </a>
+              <div className="flex gap-2 w-full">
+                <a href="tel:0661430430" className="flex-1 bg-white text-red-600 rounded-lg py-2 flex flex-col items-center justify-center font-bold text-sm" style={{ border: '1px solid #fca5a5', textDecoration: 'none' }}>
+                  <span className="text-xs text-gray-500 font-medium mb-0.5">Noureddine</span>
+                  0661 43 04 30
+                </a>
+                <a href="tel:0661219405" className="flex-1 bg-white text-red-600 rounded-lg py-2 flex flex-col items-center justify-center font-bold text-sm" style={{ border: '1px solid #fca5a5', textDecoration: 'none' }}>
+                  <span className="text-xs text-gray-500 font-medium mb-0.5">Sofiane</span>
+                  0661 21 94 05
+                </a>
+              </div>
+            </div>
             
             <div className="card banner-promo" style={{ padding: '16px' }}>
               <div className="flex items-center gap-2 mb-1">
