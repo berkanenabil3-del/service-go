@@ -12,6 +12,7 @@ const SECRET_KEY = 'thermo_super_secret_key_dev'; // En production, utiliser pro
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // Base de données SQLite
 const dbPath = path.resolve(__dirname, 'reservations.db');
