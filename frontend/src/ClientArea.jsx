@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
 import { User, Lock, Phone, ArrowRight, Bell, History, MapPin, LogOut, Star, Clock, CheckCircle2, ChevronRight, MessageSquare, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { ThemeToggle } from './App';
 import toast from 'react-hot-toast';
 import './index.css';
 
@@ -43,7 +44,10 @@ function AuthScreen() {
   };
 
   return (
-    <div className="container flex items-center justify-center" style={{ minHeight: '80vh' }}>
+    <div className="container flex items-center justify-center relative" style={{ minHeight: '80vh' }}>
+      <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+        <ThemeToggle />
+      </div>
       <form onSubmit={handleSubmit} className="glass card w-full" style={{ maxWidth: '400px' }}>
         <div className="text-center mb-6">
           <User size={48} className="text-primary mx-auto mb-4" />
@@ -168,12 +172,15 @@ function ClientDashboard() {
     <div className="container" style={{ padding: '0' }}>
       {/* HEADER MOBILE */}
       <div className="flex justify-between items-center p-4 bg-white shadow-sm" style={{ position: 'sticky', top:0, zIndex: 10 }}>
-        <button 
-          onClick={toggleLanguage} 
-          style={{ padding: '4px 8px', fontWeight: 'bold', border: '1px solid #cbd5e1', borderRadius: '5px', backgroundColor: 'transparent' }}
-        >
-          {i18n.language === 'fr' ? 'عربي' : 'FR'}
-        </button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button 
+            onClick={toggleLanguage} 
+            style={{ padding: '4px 8px', fontWeight: 'bold', border: '1px solid #cbd5e1', borderRadius: '5px', backgroundColor: 'transparent' }}
+          >
+            {i18n.language === 'fr' ? 'عربي' : 'FR'}
+          </button>
+          <ThemeToggle />
+        </div>
         <h1 className="text-xl font-bold logo-text m-0">{t('client_area')}</h1>
         <div className="flex gap-2">
           <button onClick={() => setActiveTab('notifications')} style={{ background:'none', border:'none', position:'relative' }}>

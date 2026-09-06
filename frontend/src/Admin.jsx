@@ -3,6 +3,7 @@ import { Lock, LogOut, RefreshCcw, Calendar, User, Phone, MapPin, Check, Trash2,
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { ThemeToggle } from './App';
 import './index.css';
 
 function Admin() {
@@ -217,7 +218,10 @@ function Admin() {
 
   if (!isAuthenticated) {
     return (
-      <div className="container flex items-center justify-center" style={{ minHeight: '100vh' }}>
+      <div className="container flex items-center justify-center relative" style={{ minHeight: '100vh' }}>
+        <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+          <ThemeToggle />
+        </div>
         <form onSubmit={handleLogin} className="glass card w-full" style={{ maxWidth: '400px' }}>
           <div className="text-center mb-6">
             <Lock size={48} className="text-primary mx-auto mb-4" />
@@ -240,7 +244,8 @@ function Admin() {
           <h1 className="text-3xl text-primary font-bold">Tableau de bord</h1>
           <p className="text-muted">Administration SERVIECE-GO</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
+          <ThemeToggle />
           <button onClick={fetchAllData} className="btn" style={{ padding: '10px', width: 'auto' }} title="Actualiser">
             <RefreshCcw size={20} className={loading ? "animate-spin" : ""} />
           </button>

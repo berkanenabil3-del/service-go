@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PhoneCall, Droplet, Flame, Snowflake, UserCircle, ArrowLeft, PenTool, Star, CreditCard, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ThemeToggle } from './App';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import './index.css';
@@ -123,12 +124,15 @@ function Booking() {
   return (
     <div className="container pb-10">
       <header className="app-header animate-fade-in-up flex flex-col items-center relative">
-        <button 
-          onClick={toggleLanguage} 
-          style={{ position: 'absolute', left: '10px', top: '10px', padding: '5px 10px', fontWeight: 'bold', border: '1px solid var(--glass-border)', borderRadius: '5px', backgroundColor: 'var(--glass-bg)', color: 'var(--text-dark)' }}
-        >
-          {i18n.language === 'fr' ? 'عربي' : 'FR'}
-        </button>
+        <div style={{ position: 'absolute', left: '10px', top: '10px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button 
+            onClick={toggleLanguage} 
+            style={{ padding: '5px 10px', fontWeight: 'bold', border: '1px solid var(--glass-border)', borderRadius: '5px', backgroundColor: 'var(--glass-bg)', color: 'var(--text-dark)' }}
+          >
+            {i18n.language === 'fr' ? 'عربي' : 'FR'}
+          </button>
+          <ThemeToggle />
+        </div>
         <Link to="/client" style={{ position: 'absolute', right: '15px', top: '10px', display: 'flex', alignItems: 'center', gap: '5px', backgroundColor: '#0ea5e9', color: 'white', padding: '6px 12px', borderRadius: '20px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem', boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.3)' }}>
           <UserCircle size={18} />
           {t('client_area', 'Espace Client')}

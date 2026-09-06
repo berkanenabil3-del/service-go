@@ -39,7 +39,7 @@ export const ThemeToggle = () => {
   return (
     <button 
       onClick={toggleTheme}
-      style={{ position: 'absolute', top: '10px', left: '75px', zIndex: 100, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '50%', padding: '8px', backdropFilter: 'blur(10px)', color: 'var(--text-dark)' }}
+      style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '50%', padding: '8px', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
       {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
     </button>
@@ -50,7 +50,6 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <ThemeToggle />
         <Toaster position="top-center" />
         <BrowserRouter>
           <Routes>
