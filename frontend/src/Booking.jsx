@@ -96,10 +96,10 @@ function Booking() {
 
   const renderIcon = (type) => {
     switch (type) {
-      case 'droplet': return <Droplet size={32} className="text-blue-500 mb-2" />;
-      case 'flame': return <Flame size={32} className="text-red-500 mb-2" />;
-      case 'snowflake': return <Snowflake size={32} className="text-cyan-500 mb-2" />;
-      default: return <PenTool size={32} className="text-gray-500 mb-2" />;
+      case 'droplet': return <Droplet size={32} className="mb-2" style={{ color: '#3b82f6' }} />;
+      case 'flame': return <Flame size={32} className="mb-2" style={{ color: '#ef4444' }} />;
+      case 'snowflake': return <Snowflake size={32} className="mb-2" style={{ color: '#06b6d4' }} />;
+      default: return <PenTool size={32} className="mb-2" style={{ color: '#6b7280' }} />;
     }
   };
 
