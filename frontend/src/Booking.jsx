@@ -292,11 +292,11 @@ function Booking() {
             </div>
             
             <div className="form-group">
-              <div className="flex justify-between items-center mb-1">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-2 mb-2">
                 <label className="form-label mb-0">{t('address')}</label>
-                <button type="button" onClick={getLocation} disabled={isLocating} className="text-primary text-sm flex items-center gap-1 font-bold bg-blue-50 px-2 py-1 rounded">
+                <button type="button" onClick={getLocation} disabled={isLocating} className="text-primary text-sm flex items-center justify-center gap-1 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded w-full sm:w-auto transition-colors">
                   {isLocating ? <span className="animate-spin">⏳</span> : <Navigation size={14} />}
-                  📍 Utiliser ma position
+                  📍 Localiser automatiquement
                 </button>
               </div>
               <input type="text" name="address" required className="form-input" value={formData.address} onChange={handleInputChange} />
@@ -309,13 +309,13 @@ function Booking() {
 
             <div className="form-group mb-6">
               <label className="form-label block mb-2">📸 Ajouter une photo (Optionnel)</label>
-              <div className="flex items-center gap-3">
-                <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded border border-gray-300 flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <label className="cursor-pointer bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 rounded border border-gray-300 flex items-center justify-center gap-2 w-full sm:w-auto transition-colors">
                   <Camera size={20} />
-                  Choisir une image
+                  Prendre ou choisir une image
                   <input type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
                 </label>
-                {formData.photo_data && <span className="text-green-600 font-bold text-sm flex items-center gap-1">✓ Photo ajoutée</span>}
+                {formData.photo_data && <span className="text-green-600 font-bold text-sm flex items-center justify-center gap-1">✓ Photo prête</span>}
               </div>
             </div>
 

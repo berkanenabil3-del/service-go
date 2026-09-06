@@ -16,6 +16,10 @@
   --glass-border: rgba(255, 255, 255, 0.4);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
   
+  /* Inputs */
+  --input-border: #cbd5e1;
+  --input-bg: #f8fafc;
+  
   /* Utilities */
   --radius-lg: 24px;
   --radius-md: 16px;
@@ -30,6 +34,8 @@
   --white: #1e293b;
   --glass-bg: rgba(30, 41, 59, 0.8);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --input-border: #334155;
+  --input-bg: #1e293b;
 }
 
 * {
@@ -178,8 +184,8 @@ h1, h2, h3, h4 {
   width: 100%;
   padding: 14px 16px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-border);
-  background-color: var(--white);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
   color: var(--text-dark);
   font-family: 'Outfit', sans-serif;
   font-size: 1rem;
