@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PhoneCall, Droplet, Flame, Snowflake, UserCircle, ArrowLeft, PenTool, Star, CreditCard, Wallet, MapPin, Navigation, Camera } from 'lucide-react';
+import { PhoneCall, Droplet, Flame, Snowflake, UserCircle, ArrowLeft, PenTool, Star, CreditCard, Wallet, MapPin, Navigation, Camera, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from './App';
 import { useTranslation } from 'react-i18next';
