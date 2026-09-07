@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -14,100 +14,121 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-// Base de données SQLite
-const dbPath = path.resolve(__dirname, 'reservations.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error("Erreur d'ouverture DB", err.message);
-  } else {
-    console.log("Connecté à la base de données SQLite.");
-    
-    // Création des tables
-    db.serialize(() => {
-      // 1. Users
-      db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+// Base de données PostgreSQL
+const pool = new Pool({
+  connectionString: 'postgresql://postgres.cnazydesrucrfdiylxfo:Allhak2026%40@aws-0-eu-west-2.pooler.supabase.com:6543/postgres'
+});
+
+// Wrapper SQLite-like pour minimiser les changements de code
+const db = {
+  get: async (sql, params, callback) => {
+    try {
+      if (typeof params === 'function') { callback = params; params = []; }
+      let i = 1;
+      const pgSql = sql.replace(/\?/g, () => `$${i++}`);
+      const { rows } = await pool.query(pgSql, params);
+      if (callback) callback(null, rows[0]);
+    } catch(err) { if (callback) callback(err, null); }
+  },
+  all: async (sql, params, callback) => {
+    try {
+      if (typeof params === 'function') { callback = params; params = []; }
+      let i = 1;
+      const pgSql = sql.replace(/\?/g, () => `$${i++}`);
+      const { rows } = await pool.query(pgSql, params);
+      if (callback) callback(null, rows);
+    } catch(err) { if (callback) callback(err, null); }
+  },
+  run: async (sql, params, callback) => {
+    try {
+      if (typeof params === 'function') { callback = params; params = []; }
+      let i = 1;
+      const pgSql = sql.replace(/\?/g, () => `$${i++}`);
+      const isInsert = pgSql.trim().toUpperCase().startsWith('INSERT');
+      const finalSql = isInsert ? `${pgSql} RETURNING id` : pgSql;
+      
+      const { rows } = await pool.query(finalSql, params);
+      const context = { lastID: isInsert && rows.length ? rows[0].id : null };
+      if (callback) callback.call(context, null);
+    } catch(err) { 
+      if (callback) callback(err); 
+    }
+  }
+};
+
+// Initialisation des tables PostgreSQL
+const initDB = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
         phone TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         name TEXT NOT NULL,
-        date_creation DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`);
-
-      // 2. Addresses
-      db.run(`CREATE TABLE IF NOT EXISTS addresses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
+        date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS addresses (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
         label TEXT NOT NULL,
-        address_text TEXT NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-      )`);
-
-      // 3. Reservations (mise à jour avec user_id et statuts spécifiques)
-      db.run(`CREATE TABLE IF NOT EXISTS reservations (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
+        address_text TEXT NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS reservations (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
         service TEXT NOT NULL,
         name TEXT NOT NULL,
         phone TEXT NOT NULL,
         address TEXT NOT NULL,
         details TEXT,
         photo_data TEXT,
-        status TEXT DEFAULT 'En attente', -- En attente, Acceptée, En route, En cours, Terminée
+        status TEXT DEFAULT 'En attente',
         price REAL DEFAULT 0,
-        date_reservation DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-      )`);
-
-      // 4. Notifications
-      db.run(`CREATE TABLE IF NOT EXISTS notifications (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
+        date_reservation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
         message TEXT NOT NULL,
         is_read INTEGER DEFAULT 0,
-        date_notif DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-      )`);
-
-      // 5. Reviews (Avis)
-      db.run(`CREATE TABLE IF NOT EXISTS reviews (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        reservation_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
+        date_notif TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS reviews (
+        id SERIAL PRIMARY KEY,
+        reservation_id INTEGER REFERENCES reservations(id),
+        user_id INTEGER REFERENCES users(id),
         rating INTEGER NOT NULL,
-        comment TEXT,
-        FOREIGN KEY (reservation_id) REFERENCES reservations (id),
-        FOREIGN KEY (user_id) REFERENCES users (id)
-      )`);
-
-      // 6. Services (Dynamiques)
-      db.run(`CREATE TABLE IF NOT EXISTS services (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        comment TEXT
+      );
+      CREATE TABLE IF NOT EXISTS services (
+        id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         description TEXT NOT NULL,
         icon_type TEXT DEFAULT 'tool'
-      )`, (err) => {
-        // Insérer les services par défaut si la table est vide
-        db.get(`SELECT COUNT(*) as count FROM services`, (err, row) => {
-          if (row && row.count === 0) {
-            db.run(`INSERT INTO services (name, description, icon_type) VALUES 
-              ('Plomberie', 'Réparation, installation et entretien de vos installations sanitaires.', 'droplet'),
-              ('Chauffage', 'Dépannage, pose et maintenance de vos systèmes de chauffage.', 'flame'),
-              ('Climatisation', 'Installation, réparation et recharge gaz de vos climatiseurs.', 'snowflake')
-            `);
-          }
-        });
-      });
-
-      // 7. Technicians
-      db.run(`CREATE TABLE IF NOT EXISTS technicians (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+      );
+      CREATE TABLE IF NOT EXISTS technicians (
+        id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         phone TEXT NOT NULL,
         specialty TEXT
-      )`);
-    });
+      );
+    `);
+    
+    // Insérer les services par défaut
+    const { rows } = await pool.query(`SELECT COUNT(*) as count FROM services`);
+    if (parseInt(rows[0].count) === 0) {
+      await pool.query(`INSERT INTO services (name, description, icon_type) VALUES 
+        ('Plomberie', 'Réparation, installation et entretien de vos installations sanitaires.', 'droplet'),
+        ('Chauffage', 'Dépannage, pose et maintenance de vos systèmes de chauffage.', 'flame'),
+        ('Climatisation', 'Installation, réparation et recharge gaz de vos climatiseurs.', 'snowflake')
+      `);
+    }
+    console.log("Connecté à PostgreSQL (Supabase) !");
+  } catch (err) {
+    console.error("Erreur d'initialisation Postgres :", err);
   }
-});
+};
+initDB();
 
 // Middleware d'authentification
 const authenticateToken = (req, res, next) => {
@@ -361,7 +382,7 @@ app.get('/api/admin/stats', authenticateAdmin, (req, res) => {
     db.get(`SELECT COUNT(*) as count FROM users`, [], (err, row) => {
       if (row) stats.clients = row.count;
       
-      db.get(`SELECT COUNT(*) as count FROM reservations WHERE date(date_reservation) = date('now')`, [], (err, row) => {
+      db.get(`SELECT COUNT(*) as count FROM reservations WHERE DATE(date_reservation) = CURRENT_DATE`, [], (err, row) => {
         if (row) stats.reservationsToday = row.count;
         
         db.get(`SELECT COUNT(*) as count, SUM(price) as total FROM reservations WHERE status = 'Terminée'`, [], (err, row) => {
