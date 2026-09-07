@@ -17,6 +17,9 @@ export default defineConfig({
         short_name: 'SERVICE-GO',
         description: 'Sanitaire, Plomberie, Chauffage & Froid',
         theme_color: '#0ea5e9',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#ffffff',
         icons: [
           {
             src: '/icon-192x192.png',
