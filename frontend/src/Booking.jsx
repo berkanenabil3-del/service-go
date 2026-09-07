@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PhoneCall, Droplet, Flame, Snowflake, UserCircle, ArrowLeft, PenTool, Star, CreditCard, Wallet, MapPin, Navigation, Camera, CheckCircle2 } from 'lucide-react';
+import { PhoneCall, Droplet, Flame, Snowflake, UserCircle, ArrowLeft, PenTool, Star, CreditCard, Wallet, MapPin, Navigation, Camera, CheckCircle2, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from './App';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +17,25 @@ function Booking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        setDeferredPrompt(null);
+      });
+    }
+  };
 
   const getLocation = () => {
     if (!navigator.geolocation) {
@@ -242,6 +261,16 @@ function Booking() {
               </div>
               <p className="text-sm text-green-700">{t('promo_desc')}</p>
             </div>
+            
+            {deferredPrompt && (
+              <button 
+                onClick={handleInstallClick} 
+                className="btn flex items-center justify-center gap-2" 
+                style={{ backgroundColor: '#2563eb', color: 'white', fontWeight: 'bold' }}>
+                <Download size={20} />
+                Installer l'application
+              </button>
+            )}
           </div>
 
           <div className="text-center mb-6">

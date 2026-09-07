@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, LogOut, RefreshCcw, Calendar, User, Phone, MapPin, Check, Trash2, CheckCircle2, Users, Wrench, CalendarCheck, TrendingUp, Search, Filter, Settings, FileText, Download } from 'lucide-react';
+import { User, Phone, MapPin, Calendar, Clock, Lock, LogOut, CheckCircle2, TrendingUp, Users, FileText, Wrench, CalendarCheck, Settings, Download, Trash2, Search, Filter, RefreshCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -230,6 +230,40 @@ function Admin() {
     toast.success("PDF généré !");
   };
 
+  const exportInvoicePDF = (res) => {
+    const doc = new jsPDF();
+    doc.setFontSize(22);
+    doc.text("FACTURE - SERVICE-GO", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`, 14, 40);
+    doc.text(`Facture N° : ${res.id}-${new Date().getFullYear()}`, 14, 48);
+    
+    doc.text(`Client : ${res.name}`, 14, 64);
+    doc.text(`Téléphone : ${res.phone}`, 14, 72);
+    doc.text(`Adresse : ${res.address && res.address.includes('http') ? 'Position GPS partagée' : res.address}`, 14, 80);
+    
+    autoTable(doc, {
+      startY: 90,
+      head: [["Description du Service", "Date de l'intervention", "Total"]],
+      body: [
+        [res.service.toUpperCase(), new Date(res.date_reservation).toLocaleDateString('fr-FR'), `${res.price || 0} DZD`]
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [14, 165, 233] }
+    });
+    
+    const finalY = doc.lastAutoTable.finalY || 120;
+    doc.setFontSize(14);
+    doc.text(`Total : ${res.price || 0} DZD`, 14, finalY + 20);
+    
+    doc.setFontSize(10);
+    doc.text("Merci de votre confiance !", 105, finalY + 40, { align: "center" });
+    
+    doc.save(`Facture_${res.id}_${res.name.replace(/\s+/g, '_')}.pdf`);
+    toast.success("Facture générée !");
+  };
+
   const filteredReservations = reservations.filter(res => {
     const matchesSearch = res.name.toLowerCase().includes(searchTerm.toLowerCase()) || res.phone.includes(searchTerm);
     const matchesStatus = statusFilter === 'Toutes' || res.status === statusFilter;
@@ -401,6 +435,11 @@ function Admin() {
                     <option value="En cours">En cours</option>
                     <option value="Terminée">Terminée</option>
                   </select>
+                  {res.status === 'Terminée' && (
+                    <button onClick={() => exportInvoicePDF(res)} className="btn bg-blue-100 text-blue-600 px-4 py-2 w-auto flex items-center">
+                      <FileText size={16} className="mr-2"/> Facture
+                    </button>
+                  )}
                   <button onClick={() => deleteReservation(res.id)} className="btn bg-red-100 text-red-600 px-4 py-2 w-auto flex items-center"><Trash2 size={16} className="mr-2"/> Supprimer</button>
                 </div>
               </div>

@@ -1,9 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
-import { User, Lock, Phone, ArrowRight, Bell, History, MapPin, LogOut, Star, Clock, CheckCircle2, ChevronRight, MessageSquare, Loader2 } from 'lucide-react';
+import { User, Lock, Phone, ArrowRight, Bell, History, MapPin, LogOut, Star, Clock, CheckCircle2, ChevronRight, MessageSquare, Loader2, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from './App';
 import toast from 'react-hot-toast';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './index.css';
 
 // --- AUTHENTIFICATION ---
@@ -143,11 +145,47 @@ function ClientDashboard() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ reservation_id: reviewResId, rating, comment })
       });
-      toast.success("Merci pour votre avis !");
       setReviewResId(null);
-    } catch (e) {
-      toast.error("Erreur d'envoi de l'avis");
+      setRating(5);
+      setComment('');
+      toast.success(t('review_thanks'));
+    } catch (error) {
+      toast.error('Erreur');
     }
+  };
+
+  const exportInvoicePDF = (res) => {
+    const doc = new jsPDF();
+    doc.setFontSize(22);
+    doc.text("FACTURE - SERVICE-GO", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`, 14, 40);
+    doc.text(`Facture N° : ${res.id}-${new Date().getFullYear()}`, 14, 48);
+    
+    doc.text(`Client : ${res.name}`, 14, 64);
+    doc.text(`Téléphone : ${res.phone}`, 14, 72);
+    doc.text(`Adresse : ${res.address && res.address.includes('http') ? 'Position GPS partagée' : res.address}`, 14, 80);
+    
+    autoTable(doc, {
+      startY: 90,
+      head: [["Description du Service", "Date de l'intervention", "Total"]],
+      body: [
+        [res.service.toUpperCase(), new Date(res.date_reservation).toLocaleDateString('fr-FR'), `${res.price || 0} DZD`]
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [14, 165, 233] }
+    });
+    
+    const finalY = doc.lastAutoTable.finalY || 120;
+    doc.setFontSize(14);
+    doc.text(`Total à payer : ${res.price || 0} DZD`, 14, finalY + 20);
+    
+    doc.setFontSize(10);
+    doc.text("Merci de votre confiance !", 105, finalY + 40, { align: "center" });
+    
+    doc.save(`Facture_${res.id}_${res.name.replace(/\s+/g, '_')}.pdf`);
+    toast.success("Facture téléchargée !");
   };
 
   const toggleLanguage = () => {
@@ -227,13 +265,22 @@ function ClientDashboard() {
                   </div>
 
                   {res.status === 'Terminée' && (
-                    <button 
-                      onClick={() => setReviewResId(res.id)}
-                      className="btn mt-2" 
-                      style={{ padding: '8px', fontSize:'0.9rem', backgroundColor: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}
-                    >
-                      <Star size={16} className="inline mx-2"/> {t('leave_review')}
-                    </button>
+                    <div className="flex flex-col gap-2 mt-2">
+                      <button 
+                        onClick={() => exportInvoicePDF(res)}
+                        className="btn" 
+                        style={{ padding: '8px', fontSize:'0.9rem', backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}
+                      >
+                        <FileText size={16} className="inline mx-2"/> Télécharger la Facture
+                      </button>
+                      <button 
+                        onClick={() => setReviewResId(res.id)}
+                        className="btn" 
+                        style={{ padding: '8px', fontSize:'0.9rem', backgroundColor: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' }}
+                      >
+                        <Star size={16} className="inline mx-2"/> {t('leave_review')}
+                      </button>
+                    </div>
                   )}
                 </div>
               ))
