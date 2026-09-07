@@ -193,14 +193,24 @@ function ClientDashboard() {
       </div>
 
       <div className="p-4 mb-20">
-        <h2 className="text-2xl mb-6">{t('hello')}, {user.name} 👋</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl m-0">{t('hello')}, {user.name} 👋</h2>
+          <button onClick={() => window.location.href = '/'} className="btn btn-primary" style={{ width: 'auto', padding: '8px 16px', fontSize: '0.9rem', borderRadius: '20px' }}>
+            + Nouvelle demande
+          </button>
+        </div>
 
         {/* TABS CONTENT */}
         {activeTab === 'reservations' && (
           <div className="flex flex-col gap-4 animate-fade-in-up">
             <h3 className="text-xl font-semibold mb-2">{t('tracking')}</h3>
             {reservations.length === 0 ? (
-              <div className="card text-center p-8 text-muted">{t('no_reservations')}</div>
+              <div className="card text-center p-8 flex flex-col items-center">
+                <p className="text-muted mb-4">{t('no_reservations')}</p>
+                <button onClick={() => window.location.href = '/'} className="btn btn-primary" style={{ width: 'auto' }}>
+                  Faire ma première réservation
+                </button>
+              </div>
             ) : (
               reservations.map(res => (
                 <div key={res.id} className="card p-4">
