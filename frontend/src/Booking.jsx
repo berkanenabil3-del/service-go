@@ -10,7 +10,12 @@ function Booking() {
   const { t, i18n } = useTranslation();
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState(null);
-  const [services, setServices] = useState([]);
+  const DEFAULT_SERVICES = [
+    { id: 1, name: 'Plomberie', description: 'Réparation, installation et entretien de vos installations sanitaires.', icon_type: 'droplet' },
+    { id: 2, name: 'Chauffage', description: 'Dépannage, pose et maintenance de vos systèmes de chauffage.', icon_type: 'flame' },
+    { id: 3, name: 'Climatisation', description: 'Installation, réparation et recharge gaz de vos climatiseurs.', icon_type: 'snowflake' }
+  ];
+  const [services, setServices] = useState(DEFAULT_SERVICES);
   const [reviews, setReviews] = useState([]);
   const [formData, setFormData] = useState({ name: '', phone: '', address: '', details: '', photo_data: '' });
   const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' or 'card'

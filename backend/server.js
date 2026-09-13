@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const SECRET_KEY = 'thermo_super_secret_key_dev'; // En production, utiliser process.env
 
 // Middlewares
