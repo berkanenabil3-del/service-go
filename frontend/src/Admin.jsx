@@ -26,6 +26,70 @@ function Admin() {
   const [newService, setNewService] = useState({ name: '', description: '', icon_type: 'droplet' });
   const [newTech, setNewTech] = useState({ name: '', phone: '', specialty: '' });
 
+  // PWA Install state
+  const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPWAEvent || null);
+  const [isInstalled, setIsInstalled] = useState(
+    typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
+  );
+
+  useEffect(() => {
+    const checkStandalone = () => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (isStandalone) setIsInstalled(true);
+    };
+    checkStandalone();
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      toast.success("Application installée avec succès !", { icon: '🎉' });
+    };
+
+    if (window.deferredPWAEvent) {
+      setDeferredPrompt(window.deferredPWAEvent);
+    }
+    const handlePromptReady = () => {
+      setDeferredPrompt(window.deferredPWAEvent);
+    };
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      window.deferredPWAEvent = e;
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('pwa-prompt-ready', handlePromptReady);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => {
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('pwa-prompt-ready', handlePromptReady);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    const promptEvent = window.deferredPWAEvent || deferredPrompt;
+    if (promptEvent) {
+      try {
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          toast.success("Application installée avec succès !", { icon: '🎉' });
+          window.deferredPWAEvent = null;
+          setDeferredPrompt(null);
+        }
+      } catch (err) {
+        console.log("Erreur prompt", err);
+      }
+    } else {
+      toast((tToast) => (
+        <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
+          <strong>📲 Installation :</strong><br/>
+          Appuyez sur les <strong>3 points ⋮</strong> en haut ➔ <strong>"Ajouter à l'écran d'accueil"</strong> (ou <em>"Installer l'application"</em>).
+        </div>
+      ), { duration: 6000, icon: '📲' });
+    }
+  };
+
   const ADMIN_PASSWORD = "admin";
 
   const getAdminHeaders = () => {
@@ -286,6 +350,16 @@ function Admin() {
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="form-input text-center" placeholder="Mot de passe..." required />
           </div>
           <button type="submit" className="btn btn-primary">Connexion</button>
+          {!isInstalled && (
+            <button 
+              type="button" 
+              onClick={handleInstallClick} 
+              className="btn flex items-center justify-center gap-2 mt-4" 
+              style={{ backgroundColor: '#0284c7', color: 'white', fontWeight: 'bold' }}>
+              <Download size={18} />
+              📲 Installer l'application Pro
+            </button>
+          )}
         </form>
       </div>
     );
@@ -293,12 +367,20 @@ function Admin() {
 
   return (
     <div className="container" style={{ maxWidth: '1000px', paddingTop: '40px', paddingBottom: '40px' }}>
-      <header className="flex justify-between items-center mb-8">
+      <header className="flex justify-between items-center mb-8 flex-wrap gap-4">
         <div>
           <h1 className="text-3xl text-primary font-bold">Tableau de bord</h1>
-          <p className="text-muted">Administration SERVIECE-GO</p>
+          <p className="text-muted">Administration SERVICE-GO</p>
         </div>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-3 items-center flex-wrap">
+          {!isInstalled && (
+            <button 
+              onClick={handleInstallClick} 
+              className="btn flex items-center gap-1.5" 
+              style={{ padding: '8px 14px', backgroundColor: '#0284c7', color: 'white', width: 'auto', fontWeight: 'bold' }}>
+              <Download size={16} /> 📲 Installer
+            </button>
+          )}
           <ThemeToggle />
           <button onClick={fetchAllData} className="btn" style={{ padding: '10px', width: 'auto' }} title="Actualiser">
             <RefreshCcw size={20} className={loading ? "animate-spin" : ""} />
