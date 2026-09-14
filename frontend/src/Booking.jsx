@@ -36,9 +36,16 @@ function Booking() {
   const handleInstallClick = () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
+      deferredPrompt.userChoice.then(() => {
         setDeferredPrompt(null);
       });
+    } else {
+      toast((tToast) => (
+        <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
+          <strong>📲 Pour installer l'application :</strong><br/>
+          Appuyez sur les <strong>3 petits points ⋮</strong> en haut à droite de votre navigateur, puis sélectionnez <strong>"Installer l'application"</strong> (ou <em>"Ajouter à l'écran d'accueil"</em>).
+        </div>
+      ), { duration: 7000, icon: '📲' });
     }
   };
 
@@ -267,15 +274,13 @@ function Booking() {
               <p className="text-sm text-green-700">{t('promo_desc')}</p>
             </div>
             
-            {deferredPrompt && (
-              <button 
-                onClick={handleInstallClick} 
-                className="btn flex items-center justify-center gap-2" 
-                style={{ backgroundColor: '#2563eb', color: 'white', fontWeight: 'bold' }}>
-                <Download size={20} />
-                Installer l'application
-              </button>
-            )}
+            <button 
+              onClick={handleInstallClick} 
+              className="btn flex items-center justify-center gap-2" 
+              style={{ backgroundColor: '#0284c7', color: 'white', fontWeight: 'bold', padding: '12px', borderRadius: '10px' }}>
+              <Download size={20} />
+              📲 Installer l'application sur mon téléphone
+            </button>
           </div>
 
           <div className="text-center mb-6">
