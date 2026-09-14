@@ -428,6 +428,13 @@ function Booking() {
           </form>
         </div>
       )}
+
+      {/* FOOTER AVEC ACCES DIRECT PRO */}
+      <footer className="text-center mt-12 mb-6 pt-6" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+        <Link to="/admin" className="text-xs text-muted hover:text-primary transition-colors inline-flex items-center gap-1.5 p-2 rounded">
+          🔒 Accès Espace Pro / Administration
+        </Link>
+      </footer>
     </div>
   );
 }
