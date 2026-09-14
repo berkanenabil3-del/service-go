@@ -21,10 +21,24 @@ function Booking() {
   const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' or 'card'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isLocating, setIsLocating] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPWAEvent || null);
+  const [isInstalled, setIsInstalled] = useState(
+    typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
+  );
 
   useEffect(() => {
+    // Détecter si l'application tourne déjà en tant qu'app installée
+    const checkStandalone = () => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (isStandalone) setIsInstalled(true);
+    };
+    checkStandalone();
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      toast.success("Application installée avec succès !", { icon: '🎉' });
+    };
+
     if (window.deferredPWAEvent) {
       setDeferredPrompt(window.deferredPWAEvent);
     }
@@ -36,9 +50,12 @@ function Booking() {
       window.deferredPWAEvent = e;
       setDeferredPrompt(e);
     };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
     window.addEventListener('pwa-prompt-ready', handlePromptReady);
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
     return () => {
+      window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('pwa-prompt-ready', handlePromptReady);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
     };
@@ -293,13 +310,15 @@ function Booking() {
               <p className="text-sm text-green-700">{t('promo_desc')}</p>
             </div>
             
-            <button 
-              onClick={handleInstallClick} 
-              className="btn flex items-center justify-center gap-2" 
-              style={{ backgroundColor: '#0284c7', color: 'white', fontWeight: 'bold', padding: '12px', borderRadius: '10px' }}>
-              <Download size={20} />
-              📲 Installer l'application sur mon téléphone
-            </button>
+            {!isInstalled && (
+              <button 
+                onClick={handleInstallClick} 
+                className="btn flex items-center justify-center gap-2" 
+                style={{ backgroundColor: '#0284c7', color: 'white', fontWeight: 'bold', padding: '12px', borderRadius: '10px' }}>
+                <Download size={20} />
+                📲 Installer l'application sur mon téléphone
+              </button>
+            )}
           </div>
 
           <div className="text-center mb-6">
