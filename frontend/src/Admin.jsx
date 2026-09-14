@@ -90,8 +90,6 @@ function Admin() {
     }
   };
 
-  const ADMIN_PASSWORD = "admin";
-
   const getAdminHeaders = () => {
     return {
       'Content-Type': 'application/json',

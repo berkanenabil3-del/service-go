@@ -319,9 +319,9 @@ app.post('/api/reservations', (req, res) => {
 
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
-  // Mot de passe admin codé en dur (simplifié pour cet exemple)
-  if (password === 'admin') {
-    const token = jwt.sign({ role: 'admin' }, SECRET_KEY, { expiresIn: '1d' });
+  const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'ServiceGo@Pro2026!';
+  if (password === ADMIN_PASS) {
+    const token = jwt.sign({ role: 'admin' }, SECRET_KEY, { expiresIn: '7d' });
     res.json({ token });
   } else {
     res.status(401).json({ error: "Mot de passe incorrect" });
