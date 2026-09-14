@@ -22,30 +22,49 @@ function Booking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPWAEvent || null);
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e) => {
+    if (window.deferredPWAEvent) {
+      setDeferredPrompt(window.deferredPWAEvent);
+    }
+    const handlePromptReady = () => {
+      setDeferredPrompt(window.deferredPWAEvent);
+    };
+    const handleBeforeInstall = (e) => {
       e.preventDefault();
+      window.deferredPWAEvent = e;
       setDeferredPrompt(e);
     };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('pwa-prompt-ready', handlePromptReady);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => {
+      window.removeEventListener('pwa-prompt-ready', handlePromptReady);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    };
   }, []);
 
-  const handleInstallClick = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        setDeferredPrompt(null);
-      });
+  const handleInstallClick = async () => {
+    const promptEvent = window.deferredPWAEvent || deferredPrompt;
+    if (promptEvent) {
+      try {
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          toast.success("Application installée avec succès !", { icon: '🎉' });
+          window.deferredPWAEvent = null;
+          setDeferredPrompt(null);
+        }
+      } catch (err) {
+        console.log("Erreur prompt", err);
+      }
     } else {
       toast((tToast) => (
         <div style={{ textAlign: 'left', lineHeight: '1.4' }}>
-          <strong>📲 Pour installer l'application :</strong><br/>
-          Appuyez sur les <strong>3 petits points ⋮</strong> en haut à droite de votre navigateur, puis sélectionnez <strong>"Installer l'application"</strong> (ou <em>"Ajouter à l'écran d'accueil"</em>).
+          <strong>📲 Installation :</strong><br/>
+          Si la boîte d'installation ne s'ouvre pas automatiquement, appuyez sur les <strong>3 points ⋮</strong> en haut ➔ <strong>"Ajouter à l'écran d'accueil"</strong>.
         </div>
-      ), { duration: 7000, icon: '📲' });
+      ), { duration: 6000, icon: '📲' });
     }
   };
 
