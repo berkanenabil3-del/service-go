@@ -21,6 +21,7 @@ function Booking() {
   const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' or 'card'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPWAEvent || null);
   const [isInstalled, setIsInstalled] = useState(
     typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
