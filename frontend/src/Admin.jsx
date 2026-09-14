@@ -350,16 +350,14 @@ function Admin() {
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="form-input text-center" placeholder="Mot de passe..." required />
           </div>
           <button type="submit" className="btn btn-primary">Connexion</button>
-          {!isInstalled && (
-            <button 
-              type="button" 
-              onClick={handleInstallClick} 
-              className="btn flex items-center justify-center gap-2 mt-4" 
-              style={{ backgroundColor: '#0284c7', color: 'white', fontWeight: 'bold' }}>
-              <Download size={18} />
-              📲 Installer l'application Pro
-            </button>
-          )}
+          <button 
+            type="button" 
+            onClick={handleInstallClick} 
+            className="btn flex items-center justify-center gap-2 mt-4" 
+            style={{ backgroundColor: '#0284c7', color: 'white', fontWeight: 'bold' }}>
+            <Download size={18} />
+            📲 Installer l'application Pro
+          </button>
         </form>
       </div>
     );
@@ -373,14 +371,12 @@ function Admin() {
           <p className="text-muted">Administration SERVICE-GO</p>
         </div>
         <div className="flex gap-3 items-center flex-wrap">
-          {!isInstalled && (
-            <button 
-              onClick={handleInstallClick} 
-              className="btn flex items-center gap-1.5" 
-              style={{ padding: '8px 14px', backgroundColor: '#0284c7', color: 'white', width: 'auto', fontWeight: 'bold' }}>
-              <Download size={16} /> 📲 Installer
-            </button>
-          )}
+          <button 
+            onClick={handleInstallClick} 
+            className="btn flex items-center gap-1.5" 
+            style={{ padding: '8px 14px', backgroundColor: '#0284c7', color: 'white', width: 'auto', fontWeight: 'bold' }}>
+            <Download size={16} /> 📲 Installer
+          </button>
           <ThemeToggle />
           <button onClick={fetchAllData} className="btn" style={{ padding: '10px', width: 'auto' }} title="Actualiser">
             <RefreshCcw size={20} className={loading ? "animate-spin" : ""} />
