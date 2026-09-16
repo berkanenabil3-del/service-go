@@ -112,6 +112,15 @@ const initDB = async () => {
         phone TEXT NOT NULL,
         specialty TEXT
       );
+
+      -- Activation de Row-Level Security (RLS) pour protéger les tables et résoudre les alertes Supabase
+      ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE addresses ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE reservations ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE services ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE technicians ENABLE ROW LEVEL SECURITY;
     `);
     
     // Insérer les services par défaut
